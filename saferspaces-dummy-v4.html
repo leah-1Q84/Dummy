@@ -632,9 +632,6 @@ body {
       Hey, danke, dass du dich meldest! Gerade ist das Team im Einsatz. Bitte bleibe hier im Chat, wir sind so schnell wie möglich für dich da.
       <div class="chat-wp-inline">⏱ Ankunft in ca. <span class="cwt">3 Min.</span></div>
     </div>
-    <div class="chat-bubble">
-      Hallo, danke, dass du dich meldest. Soll sich jemand aus unserem Team auf den Weg zu dir machen oder möchtest du anonym etwas mitteilen?
-    </div>
   </div>
   <div class="chat-input-wrap">
     <span class="chat-loc">📍</span>
@@ -930,7 +927,7 @@ function startCountdown(flow) {
     setTimeout(() => { el.textContent = n; el.style.opacity = '1'; }, 200);
     if (n <= 0) {
       clearInterval(cdTimer);
-      setTimeout(() => go('s-gleich','s-countdown'), 300);
+      setTimeout(() => go('s-chat','s-countdown'), 300);
     }
   }, 1000);
 }
