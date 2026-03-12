@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz für Kinder & Jugendliche</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0f0e17;
+    --card: #1a1a2e;
+    --accent1: #ff6b6b;
+    --accent2: #ffd93d;
+    --accent3: #6bcb77;
+    --accent4: #4d96ff;
+    --accent5: #c77dff;
+    --text: #fffffe;
+    --muted: #a7a9be;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Nunito', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .stars {
+    position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
+  }
+  .star {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
+  }
+  @keyframes twinkle {
+    0%,100% { opacity: 0.1; } 50% { opacity: 0.8; }
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    position: relative; z-index: 1;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: slideDown 0.7s ease both;
+  }
+  @keyframes slideDown {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  header h1 {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--accent2), var(--accent1), var(--accent5));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p {
+    color: var(--muted);
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+  }
+  .cat-btn {
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    border: 2px solid;
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+  .cat-btn:hover, .cat-btn.active {
+    color: var(--bg);
+  }
+
+  .questions-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .q-card {
+    background: var(--card);
+    border-radius: 16px;
+    border-left: 4px solid;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: fadeUp 0.5s ease both;
+  }
+  @keyframes fadeUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .q-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+
+  .q-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.1rem 1.25rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .q-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+  .q-meta {
+    flex: 1;
+  }
+  .q-category {
+    font-size: 0.7rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 0.2rem;
+  }
+  .q-text {
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+  .q-toggle {
+    font-size: 1.2rem;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+  .q-card.open .q-toggle {
+    transform: rotate(180deg);
+  }
+
+  .q-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s;
+    padding: 0 1.25rem;
+  }
+  .q-card.open .q-answer {
+    max-height: 200px;
+    padding: 0 1.25rem 1.25rem;
+  }
+  .answer-inner {
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  .answer-inner span.tick {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .difficulty {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-family: 'Space Mono', monospace;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+    opacity: 0.8;
+  }
+
+  .count-bar {
+    text-align: center;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="container">
+  <header>
+    <h1>🧠 Quiz-Zeit!</h1>
+    <p>Wissen für 10–16 Jahre · Klick die Antwort auf!</p>
+  </header>
+
+  <div class="category-filter" id="filters"></div>
+  <div class="count-bar" id="countBar"></div>
+  <div class="questions-grid" id="grid"></div>
+</div>
+
+<script>
+const questions = [
+  // Wissenschaft & Natur
+  { cat: "Wissenschaft", icon: "🔬", q: "Was ist das häufigste Gas in der Erdatmosphäre?", a: "Stickstoff (N₂) – er macht etwa 78 % der Luft aus.", diff: "leicht", color: "#4d96ff" },
+  { cat: "Wissenschaft", icon: "⚗️", q: "Wie viele Knochen hat ein erwachsener Mensch?", a: "206 Knochen. Babys haben über 300, viele davon verwachsen im Laufe des Wachstums.", diff: "mittel", color: "#4d96ff" },
+  { cat: "Wissenschaft", icon: "🌡️", q: "Bei welcher Temperatur siedet Wasser auf Meereshöhe?", a: "Bei 100 °C (Celsius). In großen Höhen siedet Wasser wegen des geringeren Luftdrucks schon früher.", diff: "leicht", color: "#4d96ff" },
+  { cat: "Wissenschaft", icon: "🧬", q: "Was ist DNA und wo befindet sie sich in der Zelle?", a: "DNA (Desoxyribonukleinsäure) ist der Träger der Erbinformation. Sie liegt hauptsächlich im Zellkern.", diff: "mittel", color: "#4d96ff" },
+  { cat: "Wissenschaft", icon: "🌊", q: "Warum ist das Meer salzig?", a: "Salze werden durch Flüsse vom Land ins Meer gespült und reichern sich dort an, weil Wasser verdunstet, das Salz aber bleibt.", diff: "mittel", color: "#4d96ff" },
+
+  // Geografie
+  { cat: "Geografie", icon: "🌍", q: "Was ist der längste Fluss der Welt?", a: "Der Nil in Afrika – er ist rund 6.650 km lang. Manchmal wird auch der Amazonas genannt, je nach Messmethode.", diff: "leicht", color: "#ffd93d" },
+  { cat: "Geografie", icon: "🗻", q: "Welches ist der höchste Berg der Welt?", a: "Der Mount Everest im Himalaya mit 8.849 m über dem Meeresspiegel.", diff: "leicht", color: "#ffd93d" },
+  { cat: "Geografie", icon: "🌐", q: "Auf welchem Kontinent liegt Ägypten?", a: "Ägypten liegt in Nordafrika, grenzt aber im Osten an Asien (Sinai-Halbinsel).", diff: "leicht", color: "#ffd93d" },
+  { cat: "Geografie", icon: "🧭", q: "Wie heißt die imaginäre Linie, die die Erde in Nord- und Südhalbkugel teilt?", a: "Der Äquator – er liegt auf dem Breitengrad 0°.", diff: "leicht", color: "#ffd93d" },
+  { cat: "Geografie", icon: "🗺️", q: "Welches ist das flächenmäßig größte Land der Welt?", a: "Russland mit einer Fläche von rund 17,1 Millionen km².", diff: "leicht", color: "#ffd93d" },
+
+  // Geschichte
+  { cat: "Geschichte", icon: "🏛️", q: "Wann begann der Zweite Weltkrieg?", a: "Am 1. September 1939 mit dem deutschen Überfall auf Polen.", diff: "mittel", color: "#ff6b6b" },
+  { cat: "Geschichte", icon: "⚔️", q: "Wer war Julius Caesar?", a: "Ein römischer Feldherr und Politiker (100–44 v. Chr.), der entscheidend zur Ausweitung des Römischen Reichs beitrug.", diff: "mittel", color: "#ff6b6b" },
+  { cat: "Geschichte", icon: "🗼", q: "Wann wurde die Berliner Mauer gebaut und wann fiel sie?", a: "Gebaut: 13. August 1961 – Gefallen: 9. November 1989.", diff: "mittel", color: "#ff6b6b" },
+  { cat: "Geschichte", icon: "🌏", q: "Welches Zeitalter folgte auf das Mittelalter?", a: "Die Neuzeit, die grob mit der Entdeckung Amerikas (1492) und der Renaissance begann.", diff: "schwer", color: "#ff6b6b" },
+  { cat: "Geschichte", icon: "🚢", q: "In welchem Jahr entdeckte Christoph Kolumbus Amerika?", a: "1492 – er landete am 12. Oktober auf einer Insel in der Karibik.", diff: "leicht", color: "#ff6b6b" },
+
+  // Mathematik
+  { cat: "Mathe", icon: "📐", q: "Was ist der Satz des Pythagoras?", a: "In einem rechtwinkligen Dreieck gilt: a² + b² = c², wobei c die Hypotenuse (längste Seite) ist.", diff: "mittel", color: "#6bcb77" },
+  { cat: "Mathe", icon: "🔢", q: "Was sind Primzahlen? Nenne drei Beispiele.", a: "Zahlen, die nur durch 1 und sich selbst teilbar sind. Beispiele: 2, 3, 5, 7, 11, 13 …", diff: "leicht", color: "#6bcb77" },
+  { cat: "Mathe", icon: "📏", q: "Wie berechnet man den Umfang eines Kreises?", a: "U = 2 × π × r, wobei r der Radius ist und π ≈ 3,14159.", diff: "mittel", color: "#6bcb77" },
+  { cat: "Mathe", icon: "➗", q: "Was ergibt 15 % von 200?", a: "30 – denn 200 × 0,15 = 30.", diff: "leicht", color: "#6bcb77" },
+  { cat: "Mathe", icon: "🔺", q: "Wie groß ist die Winkelsumme in einem Dreieck?", a: "Immer genau 180°.", diff: "leicht", color: "#6bcb77" },
+
+  // Literatur & Sprache
+  { cat: "Literatur", icon: "📚", q: "Wer schrieb 'Harry Potter'?", a: "J. K. Rowling – die britische Autorin veröffentlichte den ersten Band 1997.", diff: "leicht", color: "#c77dff" },
+  { cat: "Literatur", icon: "✍️", q: "Was ist ein Haiku?", a: "Ein japanisches Kurzgedicht mit 3 Versen: 5 – 7 – 5 Silben.", diff: "mittel", color: "#c77dff" },
+  { cat: "Literatur", icon: "🗣️", q: "Was ist ein Palindrom? Gib ein Beispiel.", a: "Ein Wort oder Satz, der vorwärts und rückwärts gleich lautet. Beispiel: 'Radar', 'Lagerregal'.", diff: "mittel", color: "#c77dff" },
+  { cat: "Literatur", icon: "🌍", q: "Wie viele Sprachen werden weltweit ungefähr gesprochen?", a: "Rund 7.000 Sprachen – davon sind viele jedoch vom Aussterben bedroht.", diff: "schwer", color: "#c77dff" },
+
+  // Physik & Technik
+  { cat: "Physik", icon: "⚡", q: "Was ist elektrischer Strom?", a: "Die gerichtete Bewegung von Elektronen durch einen Leiter, gemessen in Ampere (A).", diff: "mittel", color: "#ff9f43" },
+  { cat: "Physik", icon: "🌈", q: "Warum entsteht ein Regenbogen?", a: "Sonnenlicht wird in Wassertropfen gebrochen und in seine Spektralfarben aufgespalten.", diff: "mittel", color: "#ff9f43" },
+  { cat: "Physik", icon: "🚀", q: "Wie schnell ist Licht?", a: "Rund 299.792 km pro Sekunde – also knapp 300.000 km/s.", diff: "leicht", color: "#ff9f43" },
+  { cat: "Physik", icon: "🧲", q: "Was sind die zwei Pole eines Magneten?", a: "Nord- und Südpol. Gleiche Pole stoßen sich ab, ungleiche ziehen sich an.", diff: "leicht", color: "#ff9f43" },
+
+  // Sport
+  { cat: "Sport", icon: "⚽", q: "Wie viele Spieler stehen pro Mannschaft beim Fußball auf dem Feld?", a: "11 Spieler pro Team – also 22 Feldspieler insgesamt.", diff: "leicht", color: "#fd79a8" },
+  { cat: "Sport", icon: "🏅", q: "In welcher Stadt fanden die ersten modernen Olympischen Sommerspiele statt?", a: "1896 in Athen, Griechenland.", diff: "mittel", color: "#fd79a8" },
+  { cat: "Sport", icon: "🎾", q: "Wie heißt das berühmteste Tennisturnier auf Rasen?", a: "Wimbledon – es findet jedes Jahr in London statt.", diff: "leicht", color: "#fd79a8" },
+
+  // Musik
+  { cat: "Musik", icon: "🎵", q: "Wie viele Noten gibt es in einer Oktave?", a: "8 Stammtöne (C, D, E, F, G, A, H, C) – mit Halb­tönen insgesamt 12 Töne.", diff: "mittel", color: "#00cec9" },
+  { cat: "Musik", icon: "🎸", q: "Wie viele Saiten hat eine Standard-Gitarre?", a: "6 Saiten (E, A, D, G, H, e).", diff: "leicht", color: "#00cec9" },
+  { cat: "Musik", icon: "🎼", q: "Was ist ein Dirigent?", a: "Die Person, die ein Orchester oder einen Chor leitet und mit Gestik den Takt und die Interpretation vorgibt.", diff: "leicht", color: "#00cec9" },
+
+  // Biologie
+  { cat: "Biologie", icon: "🦋", q: "Was ist Metamorphose bei Insekten?", a: "Die Verwandlung, z. B. Raupe → Puppe → Schmetterling (vollständige Metamorphose).", diff: "mittel", color: "#55efc4" },
+  { cat: "Biologie", icon: "🌱", q: "Was ist Photosynthese?", a: "Der Prozess, bei dem Pflanzen mit Hilfe von Licht, Wasser und CO₂ Zucker und Sauerstoff produzieren.", diff: "mittel", color: "#55efc4" },
+  { cat: "Biologie", icon: "🦈", q: "Sind Wale Fische?", a: "Nein – Wale sind Säugetiere. Sie atmen Luft, stillen ihre Jungtiere und sind warm­blütig.", diff: "leicht", color: "#55efc4" },
+
+  // Allgemeinwissen
+  { cat: "Allgemein", icon: "💡", q: "Wer erfand die Glühbirne?", a: "Thomas Alva Edison patentierte 1879 eine praktisch nutzbare Glühbirne – parallel arbeitete auch Joseph Swan daran.", diff: "leicht", color: "#a29bfe" },
+  { cat: "Allgemein", icon: "🌕", q: "Wie lange dauert ein Mondtag (von Sonnenaufgang bis Sonnenaufgang auf dem Mond)?", a: "Etwa 29,5 Erdtage – so lange dauert ein vollständiger Zyklus.", diff: "schwer", color: "#a29bfe" },
+  { cat: "Allgemein", icon: "🤖", q: "Was bedeutet das Kürzel 'KI'?", a: "Künstliche Intelligenz – Computersysteme, die menschenähnliche Denkprozesse nachahmen.", diff: "leicht", color: "#a29bfe" },
+];
+
+// Build stars
+const starsDiv = document.getElementById('stars');
+for (let i = 0; i < 80; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:-${Math.random()*5}s;opacity:${Math.random()}`;
+  starsDiv.appendChild(s);
+}
+
+// Categories
+const cats = ['Alle', ...new Set(questions.map(q => q.cat))];
+const filtersDiv = document.getElementById('filters');
+const colors = { 'Wissenschaft':'#4d96ff','Geografie':'#ffd93d','Geschichte':'#ff6b6b','Mathe':'#6bcb77','Literatur':'#c77dff','Physik':'#ff9f43','Sport':'#fd79a8','Musik':'#00cec9','Biologie':'#55efc4','Allgemein':'#a29bfe' };
+
+let activeCat = 'Alle';
+
+cats.forEach(cat => {
+  const btn = document.createElement('button');
+  btn.className = 'cat-btn' + (cat === 'Alle' ? ' active' : '');
+  btn.textContent = cat;
+  const col = cat === 'Alle' ? '#ffffff' : colors[cat] || '#fff';
+  btn.style.borderColor = col;
+  btn.addEventListener('click', () => {
+    activeCat = cat;
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (cat !== 'Alle') { btn.style.background = col; btn.style.color = '#0f0e17'; }
+    document.querySelectorAll('.cat-btn').forEach(b => {
+      if (!b.classList.contains('active')) { b.style.background = 'transparent'; b.style.color = '#fffffe'; }
+    });
+    renderQuestions();
+  });
+  filtersDiv.appendChild(btn);
+});
+
+function diffColor(d) {
+  return d === 'leicht' ? '#6bcb77' : d === 'mittel' ? '#ffd93d' : '#ff6b6b';
+}
+
+function renderQuestions() {
+  const grid = document.getElementById('grid');
+  const filtered = activeCat === 'Alle' ? questions : questions.filter(q => q.cat === activeCat);
+  document.getElementById('countBar').textContent = `${filtered.length} Fragen`;
+  grid.innerHTML = '';
+  filtered.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.style.borderColor = q.color;
+    card.style.animationDelay = `${i * 0.04}s`;
+    card.innerHTML = `
+      <div class="q-header">
+        <span class="q-icon">${q.icon}</span>
+        <div class="q-meta">
+          <div class="q-category" style="color:${q.color}">${q.cat} <span class="difficulty" style="background:${diffColor(q.diff)}20;color:${diffColor(q.diff)};border:1px solid ${diffColor(q.diff)}">${q.diff}</span></div>
+          <div class="q-text">${q.q}</div>
+        </div>
+        <span class="q-toggle" style="color:${q.color}">▼</span>
+      </div>
+      <div class="q-answer">
+        <div class="answer-inner">
+          <span class="tick">✅</span>
+          <span>${q.a}</span>
+        </div>
+      </div>
+    `;
+    card.querySelector('.q-header').addEventListener('click', () => {
+      card.classList.toggle('open');
+    });
+    grid.appendChild(card);
+  });
+}
+
+renderQuestions();
+</script>
+</body>
+</html>
